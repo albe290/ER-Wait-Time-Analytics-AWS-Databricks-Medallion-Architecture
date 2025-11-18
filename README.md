@@ -61,7 +61,7 @@ A full production architecture with:
 
 ## 🧱 **4. Medallion Architecture**
 
-### 🥉 **Bronze — Raw Structured Ingestion**
+### 🥉 **Bronze: Raw Structured Ingestion**
 
 * Loaded CSVs directly from S3
 * Preserved original data (“as-is”)
@@ -95,10 +95,11 @@ SELECT
   _c15 AS end_date
 FROM csv.`s3://hospital-wait-times-bucket-usw2/bronze/raw/Timely_and_Effective_Care-Hospital.csv`
 ```
+<img width="2524" height="829" alt="image" src="https://github.com/user-attachments/assets/465a5c1f-f592-4b67-b977-7572f9132913" />
 
 ---
 
-### 🥈 **Silver — Clean, Validated, Modeled Data**
+### 🥈 **Silver:  Clean, Validated, Modeled Data**
 
 * Removed duplicates
 * Casted columns to correct types
@@ -140,16 +141,16 @@ try_to_date(end_date, 'MM/dd/yyyy')     AS end_date
 FROM bronze_er_wait_times
 WHERE facility_id IS NOT NULL;
 ```
-
+<img width="2533" height="1131" alt="image" src="https://github.com/user-attachments/assets/07bca047-55ac-44da-a8dc-1c2b9ed3a501" />
 ---
 
-### 🥇 **Gold — Analytics & BI Layer**
+### 🥇 **Gold: Analytics & BI Layer**
 
 You produced multiple Gold tables optimized for reporting:
 
 ---
 
-#### **Gold #1 — Top 20 Hospitals (NY)**
+#### **Gold #1: Top 20 Hospitals (NY)**
 
 ```sql
 USE CATALOG workspace_2801931945210;
@@ -165,10 +166,10 @@ SELECT
   ORDER BY avg_score DESC
   LIMIT 20;
 ```
-
+<img width="2530" height="1249" alt="image" src="https://github.com/user-attachments/assets/224cd30e-6e06-4e57-8e11-9d71853f8aec" />
 ---
 
-#### **Gold #2 — Bottom 20 Hospitals (NY)**
+#### **Gold #2: Bottom 20 Hospitals (NY)**
 
 ```sql
 SELECT 
@@ -179,10 +180,11 @@ SELECT
    ORDER BY avg_score ASC 
    LIMIT 20;
 ```
+<img width="2533" height="1222" alt="image" src="https://github.com/user-attachments/assets/5928d7cd-1247-4faa-9427-3e29cdb58c37" />
 
 ---
 
-#### **Gold #3 — State-Level Comparison**
+#### **Gold #3: State-Level Comparison**
 
 ```sql
 SELECT 
@@ -192,10 +194,10 @@ SELECT
  GROUP BY state
  ORDER BY avg_state_score DESC;
 ```
-
+<img width="2512" height="1206" alt="image" src="https://github.com/user-attachments/assets/f74a5a83-2fbe-43d6-b1d1-d46e1cdbee92" />
 ---
 
-#### **Gold #4 — Condition-Level Quality**
+#### **Gold #4: Condition-Level Quality**
 
 ```sql
 SELECT condition_name,
@@ -204,7 +206,7 @@ FROM gold_er_condition_performance
 GROUP BY condition_name
 ORDER BY avg_condition_score DESC;
 ```
-
+<img width="2542" height="982" alt="image" src="https://github.com/user-attachments/assets/7c980be6-f0cf-417c-aea7-ef6c42b64be9" />
 ---
 
 ## 🧠 **5. Why OPTIONS() Were Not Required**
@@ -270,13 +272,15 @@ This documented troubleshooting demonstrates **real-world production experience*
 
 ## 📊 **7. Visualizations**
 
-*(Insert your screenshots)*
+# Top 20 Hospitals
+<img width="1735" height="739" alt="image" src="https://github.com/user-attachments/assets/172c5183-cb2d-4049-9153-81f7c35908bc" />
 
-```md
-![Top Hospitals](screenshots/top20_hospitals.png)
-![State Comparison](screenshots/state_comparison.png)
-![Condition Performance](screenshots/condition_performance.png)
-```
+# State Comparison
+<img width="1728" height="745" alt="image" src="https://github.com/user-attachments/assets/f5e13631-fbf5-4fcd-9a84-59de0ba26a23" />
+
+# Condition-Level-Quality 
+<img width="1735" height="741" alt="image" src="https://github.com/user-attachments/assets/2b5cedde-4b6d-44fa-95bf-c07e71807e76" />
+
 
 ---
 
