@@ -1,74 +1,142 @@
+
+---
+
 # 🏥 **ER Wait-Time Analytics (AWS + Databricks | Medallion Architecture)**
 
-**A production-style data engineering pipeline for analyzing emergency room performance across U.S. hospitals.**
+A Production-Ready Healthcare Data Engineering Pipeline
 
 ---
 
-## 🔍 **1. Business Problem**
+## ⭐ **Executive Summary**
 
-Emergency Room (ER) wait times directly impact:
+This project implements a **full-scale, production-style Lakehouse pipeline** to analyze Emergency Room (ER) wait-time performance across U.S. hospitals. Using **AWS S3, Databricks, Delta Lake, Unity Catalog, and IAM**, the solution ingests raw CMS healthcare data, cleans and validates it, and transforms it into **analytics-ready Gold tables** following the Medallion Architecture (Bronze → Silver → Gold).
 
-* Patient safety
-* Hospital operational efficiency
-* Staffing workloads
-* Quality rankings
-* Financial outcomes
+The pipeline enables hospital leaders and analysts to:
 
-Hospitals struggle because their data is often siloed, inconsistent, and difficult to analyze at scale.
+* Compare performance across facilities, states, and conditions
+* Identify top-performing and underperforming hospitals
+* Detect bottlenecks affecting patient outcomes
+* Build dashboards and machine learning models
 
-**This project delivers a unified, analytics-ready data pipeline for ER performance insights**, enabling administrators to:
+**Security and governance** were implemented using AWS IAM and Databricks Unity Catalog with external S3 locations, following enterprise least-privilege best practices.
 
-* Spot bottlenecks
-* Identify high vs. low performing hospitals
-* Compare states & conditions
-* Improve patient care outcomes
+This project demonstrates real-world skills in **cloud engineering, Delta Lake optimization, data modeling, governance, troubleshooting, and healthcare analytics**.
 
 ---
 
-## 🚀 **2. Project Overview**
+# 🔍 **1. Business Problem**
 
-This repository contains a **full Databricks Lakehouse pipeline** built on:
+ER wait times critically impact:
 
-* **AWS S3** – raw + curated storage
-* **Databricks** – ingestion, transformation, Delta Lake processing
-* **Unity Catalog** – governance, permissions, external locations
-* **AWS IAM** – secure, least-privilege data access
-* **Delta Lake Medallion Architecture** – Bronze → Silver → Gold
+* Patient safety & outcomes
+* Hospital quality ratings
+* Staff workload & scheduling
+* State and federal healthcare planning
+* Operational and financial performance
 
-The pipeline transforms CMS hospital quality data into analytics-ready tables powering insights such as:
+Healthcare providers often lack:
 
-* Top 20 hospitals in New York
-* Bottom 20 hospitals
-* State-by-state ER performance
-* Condition-level hospital performance
+* A unified analytics model
+* Clean, governed data
+* Automated transformation pipelines
+* Consistent, trusted datasets for reporting
+* Scalable performance for millions of rows
 
-This project reflects real, professional Data Engineering workflows.
-
----
-
-## 🏗 **3. Architecture Diagram**
-
-A full production architecture with:
-
-* AWS + Databricks official icons
-* Medallion layers
-* Labeled data flows
-* COPY INTO, Delta Optimization, Partitioning
-
-
+**This project solves these challenges by engineering a modern Lakehouse-based analytics platform.**
 
 ---
 
-## 🧱 **4. Medallion Architecture**
+# 🚀 **2. Project Overview**
 
-### 🥉 **Bronze: Raw Structured Ingestion**
+This repository contains a complete **Databricks Lakehouse pipeline** built on:
 
-* Loaded CSVs directly from S3
-* Preserved original data (“as-is”)
-* No transformations
-* Serves as immutable audit layer
+* **AWS S3**: raw + curated storage zones
+* **Databricks SQL & PySpark**:  ingestion, transformation, Delta Lake processing
+* **Unity Catalog**:  full governance and storage permissions
+* **AWS IAM** :secure, least-privilege S3 access
+* **Delta Lake Medallion Architecture**: Bronze → Silver → Gold
+* **SQL warehouse + cluster notebooks**: optimized development workflow
 
-**SQL**
+### ⬇ The pipeline delivers insights including:
+
+* ⭐ Top 20 Hospitals in New York
+* 🔻 Bottom 20 Hospitals in New York
+* 🌎 State-by-state ER performance comparison
+* 🩺 Condition-level performance (e.g., Sepsis, ED, Vaccinations)
+
+---
+
+# 🏗 **3. Architecture Diagram**
+
+```
+┌──────────────────────────────────────────────┐
+│                 SOURCE DATA                  │
+│  CMS Timely & Effective Care Dataset (CSV)   │
+│  Stored in AWS S3 (Raw Zone)                 │
+└──────────────────────────────────────────────┘
+                      │
+                      ▼
+┌──────────────────────────────────────────────────────────┐
+│                    INGESTION LAYER                       │
+│  • Databricks reads raw CSV directly from AWS S3         │
+│  • SQL / CTAS / COPY INTO ingestion paths                │
+│  • Unity Catalog governs access using Storage Credentials │
+└──────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                               BRONZE LAYER                             │
+│------------------------------------------------------------------------│
+│  • Raw, unmodified hospital ER data (Delta)                            │
+│  • Immutable audit table                                               │
+│  • s3://bucket/raw/                                                    │
+└────────────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                               SILVER LAYER                             │
+│------------------------------------------------------------------------│
+│  • Cleaned & standardized schema                                       │
+│  • Renaming, trimming, null removal, type enforcement                  │
+│  • Partitioned by state                                                │
+│  • s3://bucket/silver/                                                 │
+└────────────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                                 GOLD LAYER                             │
+│------------------------------------------------------------------------│
+│  • Analytics-ready hospital scoring models                              │
+│  • Aggregated metrics: avg score by hospital/state/condition           │
+│  • State partitioning for performance                                  │
+│  • s3://bucket/gold/                                                   │
+└────────────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌───────────────────────────────────────────────────────────────┐
+│                     CONSUMPTION LAYER                          │
+│----------------------------------------------------------------│
+│  • Databricks SQL visualizations                               │
+│  • Top 20 / Bottom 20 dashboards                               │
+│  • State and condition analytics                               │
+│  • Future: Power BI / Lakeview                                 │
+└───────────────────────────────────────────────────────────────┘
+```
+
+---
+
+# 🧱 **4. Medallion Architecture Implementation**
+
+---
+
+## 🥉 **Bronze - Raw Structured Ingestion**
+
+* Loaded CSV directly from AWS S3
+* No transformation
+* Schema preserved as `_c0, _c1, …`
+* ACID Delta table for audit reliability
+
+**SQL Example:**
 
 ```sql
 DROP TABLE IF EXISTS bronze_er_wait_times;
@@ -93,24 +161,23 @@ SELECT
   _c13 AS footnote,
   _c14 AS start_date,
   _c15 AS end_date
-FROM csv.`s3://hospital-wait-times-bucket-usw2/bronze/raw/Timely_and_Effective_Care-Hospital.csv`
+FROM csv.`s3://hospital-wait-times-bucket-usw2/bronze/raw/Timely_and_Effective_Care-Hospital.csv`;
 ```
-<img width="2524" height="829" alt="image" src="https://github.com/user-attachments/assets/465a5c1f-f592-4b67-b977-7572f9132913" />
+<img width="2524" height="829" alt="image" src="https://github.com/user-attachments/assets/0088647a-4940-4bd1-a799-a1a4425c0244" />
 
 ---
 
-### 🥈 **Silver:  Clean, Validated, Modeled Data**
+## 🥈 **Silver - Clean, Validated, Modeled Data**
 
-* Removed duplicates
-* Casted columns to correct types
-* Standardized naming
-* Removed invalid or null rows
-* **Partitioned by state** for performance
+* Removed nulls + duplicates
+* Standardized and trimmed text fields
+* Casted numeric fields
+* Casted dates into `DATE` type
+* **Partitioned by state**
+
+**SQL Example:**
 
 ```sql
-USE CATALOG workspace_2801931945210;
-USE SCHEMA er_wait_times_dev;
-
 CREATE TABLE silver_er_wait_times
 USING DELTA 
 PARTITIONED BY (state)
@@ -127,77 +194,53 @@ SELECT
     TRIM(condition_name)    AS condition_name,
     TRIM(measure_id)        AS measure_id,
     TRIM(measure_name)      AS measure_name,
-
--- Cast numeric-ish columns 
-TRY_CAST(score AS INT)      AS score,
-TRY_CAST(sample AS INT)     AS sample,
-
-TRIM(footnote)              AS footnote,
-
-
---Convert dates from text -> DATE 
-try_to_date(start_date, 'MM/dd/yyyy') AS start_date,
-try_to_date(end_date, 'MM/dd/yyyy')     AS end_date
+    TRY_CAST(score AS INT)  AS score,
+    TRY_CAST(sample AS INT) AS sample,
+    TRIM(footnote)          AS footnote,
+    try_to_date(start_date, 'MM/dd/yyyy') AS start_date,
+    try_to_date(end_date, 'MM/dd/yyyy')   AS end_date
 FROM bronze_er_wait_times
 WHERE facility_id IS NOT NULL;
 ```
-<img width="2533" height="1131" alt="image" src="https://github.com/user-attachments/assets/07bca047-55ac-44da-a8dc-1c2b9ed3a501" />
----
-
-### 🥇 **Gold: Analytics & BI Layer**
-
-You produced multiple Gold tables optimized for reporting:
+<img width="2533" height="1131" alt="image" src="https://github.com/user-attachments/assets/aee99920-2eee-487b-8774-de9310b836c1" />
 
 ---
 
-#### **Gold #1: Top 20 Hospitals (NY)**
+## 🥇 **Gold - Analytics & BI Layer**
+
+### **Gold #1: Top 20 NY Hospitals**
 
 ```sql
-USE CATALOG workspace_2801931945210;
-USE SCHEMA er_wait_times_dev;
-
-SELECT 
-  facility_name,
-  state,
-  condition_name,
-  avg_score
-  FROM gold_er_wait_hospital_summary
-  WHERE state = 'NY'
-  ORDER BY avg_score DESC
-  LIMIT 20;
+SELECT facility_name, state, condition_name, avg_score
+FROM gold_er_wait_hospital_summary
+WHERE state = 'NY'
+ORDER BY avg_score DESC
+LIMIT 20;
 ```
-<img width="2530" height="1249" alt="image" src="https://github.com/user-attachments/assets/224cd30e-6e06-4e57-8e11-9d71853f8aec" />
----
+<img width="2530" height="1249" alt="image" src="https://github.com/user-attachments/assets/c759a55d-e68e-4ae8-b18a-212980eb7f69" />
 
-#### **Gold #2: Bottom 20 Hospitals (NY)**
+### **Gold #2: Bottom 20 NY Hospitals**
 
 ```sql
-SELECT 
-   facility_name,
-   avg_score
-   FROM gold_er_wait_hospital_summary
-   WHERE state = 'NY'
-   ORDER BY avg_score ASC 
-   LIMIT 20;
+SELECT facility_name, avg_score
+FROM gold_er_wait_hospital_summary
+WHERE state = 'NY'
+ORDER BY avg_score ASC
+LIMIT 20;
 ```
-<img width="2533" height="1222" alt="image" src="https://github.com/user-attachments/assets/5928d7cd-1247-4faa-9427-3e29cdb58c37" />
+<img width="2533" height="1222" alt="image" src="https://github.com/user-attachments/assets/bff33f02-737b-4ff6-b676-af7db7edac6a" />
 
----
-
-#### **Gold #3: State-Level Comparison**
+### **Gold #3: State-Level Comparison**
 
 ```sql
-SELECT 
- state,
- ROUND(AVG(avg_score), 2) AS avg_state_score
- FROM gold_er_wait_hospital_summary
- GROUP BY state
- ORDER BY avg_state_score DESC;
+SELECT state, ROUND(AVG(avg_score), 2) AS avg_state_score
+FROM gold_er_wait_hospital_summary
+GROUP BY state
+ORDER BY avg_state_score DESC;
 ```
-<img width="2512" height="1206" alt="image" src="https://github.com/user-attachments/assets/f74a5a83-2fbe-43d6-b1d1-d46e1cdbee92" />
----
+<img width="2512" height="1206" alt="image" src="https://github.com/user-attachments/assets/e0599fc4-bfa6-44cb-aa5c-3bf5b449a690" />
 
-#### **Gold #4: Condition-Level Quality**
+### **Gold #4: Condition-Level Quality**
 
 ```sql
 SELECT condition_name,
@@ -206,159 +249,194 @@ FROM gold_er_condition_performance
 GROUP BY condition_name
 ORDER BY avg_condition_score DESC;
 ```
-<img width="2542" height="982" alt="image" src="https://github.com/user-attachments/assets/7c980be6-f0cf-417c-aea7-ef6c42b64be9" />
+<img width="2542" height="982" alt="image" src="https://github.com/user-attachments/assets/4c2d20a9-d793-4cec-bfae-b8d6b6d3862a" />
+
 ---
 
-## 🧠 **5. Why OPTIONS() Were Not Required**
+# 🧠 **5. Why OPTIONS() Was Not Required**
 
-Databricks requires `OPTIONS()` when loading:
+Databricks only needs `OPTIONS()` for **unstructured or semi-structured** data such as:
 
 * JSON
 * XML
-* Nested semi-structured data
-* Multi-line records
-* Logs or streaming formats
+* Multi-line text
+* Event logs
+* Nested formats
 
-BUT this dataset was:
+The CMS dataset is:
 
-* A **clean**,
-* **Structured**,
-* **Well-formatted** CSV
-* With a consistent schema
+* Clean
+* Structured
+* Column-consistent CSV
 
-So Databricks automatically:
+Therefore:
 
-* Parsed headers
-* Inferred schema
-* Handled delimiters
-* Loaded all rows without additional config
+* Headers were parsed automatically
+* Schema was inferred correctly
+* No special CSV options were necessary
 
-This is exactly how real production batch CSV ingestion behaves.
+This reflects **real production batch ingestion**.
 
 ---
 
-## 🔐 **6. IAM + Unity Catalog Troubleshooting**
+# 🔐 **6. IAM + Unity Catalog Troubleshooting**
 
-This pipeline includes complete AWS–Databricks security configuration:
+This project includes full cloud governance:
 
-### ✔ Created an AWS IAM Role
+### ✔ IAM Role with External ID
 
-* Added trust policy with Databricks external ID
-* Assigned least-privilege S3 permissions:
+### ✔ Least-privilege S3 policies
 
-  * `GetObject` (raw)
-  * `Put/DeleteObject` (curated)
+### ✔ Databricks Storage Credential
 
-### ✔ Added IAM Role as a Databricks Storage Credential
+### ✔ External Locations for raw/silver/gold
 
-### ✔ Created External Locations
+### ✔ Attached to Unity Catalog Metastore
 
-* Raw
-* Silver
-* Gold
+### ✔ Validated with `DESCRIBE STORAGE CREDENTIAL`
 
-### ✔ Attached External Locations → Catalog → Schema
-
-### ✔ Resolved common errors
+Common issues resolved:
 
 * PERMISSION_DENIED
 * Missing external ID
-* Bad trust relationships
-* SQL Warehouse auto-start consuming credits
+* Wrong trust policy
+* SQL Warehouse auto-start credit burn
 
-This documented troubleshooting demonstrates **real-world production experience**.
+This demonstrates **true production troubleshooting skills.**
+https://github.com/albe290/healthcare-data-engineering-troubleshooting
+---
+
+# 📊 **7. Visualizations**
+
+### Top 20 Hospitals
+
+<img width="1735" height="739" alt="image" src="https://github.com/user-attachments/assets/0d10db7d-e968-47f6-8bd3-ec1de0de6ea4" />
+
+
+### State Comparison
+
+<img width="1728" height="745" alt="image" src="https://github.com/user-attachments/assets/bc8b674c-d1f6-41db-8cd0-92d4688c37f0" />
+
+
+### Condition-Level Quality
+
+<img width="1735" height="741" alt="image" src="https://github.com/user-attachments/assets/61b5ab35-3f66-429a-8356-ed071b09dcc5" />
+
 
 ---
 
-## 📊 **7. Visualizations**
+# 📡 **8. Dataset Source**
 
-# Top 20 Hospitals
-<img width="1735" height="739" alt="image" src="https://github.com/user-attachments/assets/172c5183-cb2d-4049-9153-81f7c35908bc" />
-
-# State Comparison
-<img width="1728" height="745" alt="image" src="https://github.com/user-attachments/assets/f5e13631-fbf5-4fcd-9a84-59de0ba26a23" />
-
-# Condition-Level-Quality 
-<img width="1735" height="741" alt="image" src="https://github.com/user-attachments/assets/2b5cedde-4b6d-44fa-95bf-c07e71807e76" />
-
-
----
-
-## 📡 **8. Dataset Source**
-
-**Source:**
-Centers for Medicare & Medicaid Services (CMS)
+**Centers for Medicare & Medicaid Services (CMS)**
 Timely & Effective Care — Hospital Dataset
-📌 [https://data.cms.gov/](https://data.cms.gov/)
-
-This dataset includes metrics on:
-
-* ER wait times
-* Condition performance
-* Hospital quality
-* Facility-level outcomes
+[https://data.cms.gov/](https://data.cms.gov/)
 
 ---
 
-## 💡 **9. Business Value Delivered**
+# 💡 **9. Business Value Delivered**
 
-This pipeline enables stakeholders to:
+This pipeline helps:
 
 ### ✔ Hospital Executives
 
-Identify bottlenecks + opportunities to improve ER operations.
+Optimize ER operations
 
 ### ✔ State-Level Leaders
 
-Compare performance across states for resource allocation.
+Allocate resources fairly
 
-### ✔ Analysts & BI Teams
+### ✔ BI & Analytics Teams
 
-Build dashboards, KPIs, and trend reporting.
+Build dashboards + KPIs
 
 ### ✔ Data Teams
 
-Reuse structured Silver/Gold layers for ML, forecasting, and workload optimization.
-
-This model mirrors real analytics engineering pipelines used in healthcare systems today.
+Use standardized data for ML
 
 ---
 
-## 🛠 **10. Tech Stack**
+# 🛠 **10. Tech Stack**
 
-* **Databricks SQL + PySpark**
-* **AWS S3**
-* **AWS IAM**
-* **Delta Lake (ACID, Partitioning, ZORDER)**
-* **Unity Catalog**
-* **Databricks Notebooks + SQL Editor**
-* **GitHub**
-
----
-
-## 🧭 **11. Future Enhancements**
-
-* Streaming ingestion using **Auto Loader**
-* **Lakeview Dashboards** (when credits refresh)
-* ML model predicting ER efficiency
-* **Airflow / Databricks Workflows** automation
-* Data quality rules (expectations)
-* Alerting and monitoring
+* Databricks SQL
+* PySpark
+* Delta Lake
+* AWS S3
+* AWS IAM
+* Unity Catalog
+* GitHub
 
 ---
 
-## 🏁 **12. Conclusion**
+# 🧭 **11. Future Enhancements**
 
-This project demonstrates a **real, production-ready lakehouse pipeline** built on AWS + Databricks using enterprise patterns:
+* Streaming via Auto Loader
+* Lakeview Dashboards
+* ML model predicting ER performance
+* Databricks Workflows orchestration
+* Data quality rules (Expectations)
+* Alerting + Monitoring
 
-* Cloud engineering
-* ETL/ELT design
-* Data modeling
-* Governance & IAM
+---
+
+# 🏁 **12. Conclusion**
+
+This project demonstrates:
+
+* Real cloud engineering
+* Production data modeling
+* Governance + IAM mastery
 * Delta Lake optimization
 * Analytics engineering
-* Real troubleshooting
-* Business storytelling
+* Healthcare domain knowledge
+
+A complete, production-ready Lakehouse pipeline.
+
+---
+
+# 📁 **Recommended GitHub Repository Structure**
+
+```
+er-wait-time-analytics/
+│
+├── README.md
+├── LICENSE
+│
+├── architecture/
+│   ├── ER_Wait_Time_Architecture.png
+│   ├── ER_Wait_Time_Horizontal_Banner.png
+│
+├── bronze/
+│   ├── create_bronze_table.sql
+│   ├── bronze_sample_output.png
+│
+├── silver/
+│   ├── create_silver_table.sql
+│   ├── silver_data_preview.png
+│
+├── gold/
+│   ├── gold_hospital_summary.sql
+│   ├── gold_state_summary.sql
+│   ├── gold_condition_summary.sql
+│   ├── gold_top20.png
+│   ├── gold_bottom20.png
+│   ├── gold_state_chart.png
+│
+├── screenshots/
+│   ├── sql_editor_queries/
+│   ├── permissions_setup/
+│   ├── iam_role_troubleshooting/
+│
+├── data/
+│   └── placeholder.txt   # dataset too large to upload
+│
+└── notebooks/
+    ├── bronze_ingestion.dbc
+    ├── silver_transformations.dbc
+    ├── gold_analytics.dbc
+```
+
+---
+
 
 
 
